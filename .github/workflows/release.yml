@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*' 
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21' 
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Extracted version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build CLI with version
+        run: |
+          # Asume que tu main.go está en el directorio cmd/cli
+          go build -ldflags="-X 'main.Version=${{ steps.version.outputs.version }}'" -o mycli ./cmd/cli
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release v${{ steps.version.outputs.version }}
+          tag_name: v${{ steps.version.outputs.version }}
+          body: "Automated release for version ${{ steps.version.outputs.version }}"
+          files: |
+            mycli
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
