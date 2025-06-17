@@ -27,7 +27,7 @@ jobs:
       - name: Build CLI with version
         run: |
           # Asume que tu main.go está en el directorio cmd/cli
-          go build -ldflags="-X 'main.Version=${{ steps.version.outputs.version }}'" -o mycli ./cmd/cli
+          go build -ldflags="-X 'main.Version=${{ steps.version.outputs.version }}'" -o netsocs .
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -36,6 +36,6 @@ jobs:
           tag_name: v${{ steps.version.outputs.version }}
           body: "Automated release for version ${{ steps.version.outputs.version }}"
           files: |
-            mycli
+            netsocs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
