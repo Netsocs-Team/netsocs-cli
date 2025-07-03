@@ -172,13 +172,6 @@ func init() {
 
 func main() {
 
-	if os.Args[1] != "init" {
-		if utils.GetCurrentAppVersion() == "not installed" {
-			fmt.Println("Netsocs is not installed. Please run 'netsocs init' to install it.")
-			os.Exit(1)
-		}
-	}
-
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
