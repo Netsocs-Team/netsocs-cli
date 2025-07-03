@@ -16,20 +16,20 @@ const NETSOCS_VERSION = "3.0.0"
 func StatusHandler(cmd *cobra.Command, args []string) {
 	verbose, _ := cmd.Flags().GetBool("verbose")
 
-	// Mostrar versión
+	// Show version
 	pterm.DefaultHeader.
 		WithBackgroundStyle(pterm.NewStyle(pterm.BgGreen)).
 		WithTextStyle(pterm.NewStyle(pterm.FgBlack)).
-		Println(" Estado de NETSOCS " + NETSOCS_VERSION)
+		Println(" NETSOCS Status " + NETSOCS_VERSION)
 
-	// Verificar pods
+	// Check pods
 	pods, err := GetNetsocsPods()
 	if err != nil {
-		pterm.Error.Printfln("Error al verificar pods: %v", err)
+		pterm.Error.Printfln("Error checking pods: %v", err)
 		os.Exit(1)
 	}
 
-	// Analizar estado de los pods
+	// Analyze pod status
 	allHealthy := true
 	var problemPods []string
 
@@ -40,14 +40,14 @@ func StatusHandler(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	// Mostrar resumen
+	// Show summary
 	if allHealthy {
-		pterm.Success.Println("Todos los servicios de NETSOCS están operativos")
+		pterm.Success.Println("All NETSOCS services are operational")
 	} else {
-		pterm.Error.Printfln("Problemas detectados en los siguientes pods: %s", strings.Join(problemPods, ", "))
+		pterm.Error.Printfln("Problems detected in the following pods: %s", strings.Join(problemPods, ", "))
 	}
 
-	// Mostrar detalles si es verbose o hay errores
+	// Show details if verbose or there are errors
 	if verbose || !allHealthy {
 		DisplayPodsStatus(pods)
 	}
@@ -62,21 +62,21 @@ type PodStatus struct {
 }
 
 func GetNetsocsPods() ([]PodStatus, error) {
-	// Ejecutar kubectl para obtener pods de NETSOCS
+	// Run kubectl to get NETSOCS pods
 	cmd := exec.Command("kubectl", "get", "pods", "-o=wide")
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = os.Stderr
 
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("error al ejecutar kubectl: %w", err)
+		return nil, fmt.Errorf("error running kubectl: %w", err)
 	}
 
-	// Parsear salida
+	// Parse output
 	lines := strings.Split(out.String(), "\n")
 	var pods []PodStatus
 
-	// Saltar la línea de encabezado
+	// Skip header line
 	for i, line := range lines {
 		if i == 0 || strings.TrimSpace(line) == "" {
 			continue
@@ -98,7 +98,7 @@ func GetNetsocsPods() ([]PodStatus, error) {
 }
 
 func IsPodHealthy(pod PodStatus) bool {
-	// Verificar que el pod esté en estado Running y todas las containers estén ready
+	// Check that the pod is in Running state and all containers are ready
 	readyParts := strings.Split(pod.Ready, "/")
 	if len(readyParts) != 2 {
 		return false
@@ -108,7 +108,7 @@ func IsPodHealthy(pod PodStatus) bool {
 }
 
 func DisplayPodsStatus(pods []PodStatus) {
-	// Crear tabla para mostrar los pods
+	// Create table to display pods
 	tableData := pterm.TableData{
 		{"Pod", "Ready", "Status", "Restarts", "Age"},
 	}
@@ -128,6 +128,6 @@ func DisplayPodsStatus(pods []PodStatus) {
 		})
 	}
 
-	pterm.DefaultSection.Println("Estado detallado de los pods")
+	pterm.DefaultSection.Println("Detailed pod status")
 	pterm.DefaultTable.WithHasHeader().WithData(tableData).Render()
 }

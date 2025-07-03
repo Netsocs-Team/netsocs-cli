@@ -14,32 +14,32 @@ import (
 func ConfigCommand(cmd *cobra.Command, args []string) {
 	utils.ShowBannerArt()
 	address := promptAddress()
-	// Actualizar el campo en values.yaml
+	// Update the field in values.yaml
 	if err := utils.UpdateChartConfig("httpHostname", "https://"+address); err != nil {
-		pterm.Error.Printfln("Error al actualizar configuración: %v", err)
+		pterm.Error.Printfln("Error updating configuration: %v", err)
 		os.Exit(1)
 	}
 
-	// Ejecutar Helm upgrade
+	// Run Helm upgrade
 	if err := utils.RunHelmUpgrade(); err != nil {
-		pterm.Error.Printfln("Error al ejecutar Helm: %v", err)
+		pterm.Error.Printfln("Error running Helm: %v", err)
 		os.Exit(1)
 	}
 
-	pterm.Success.Printfln("¡Configuración completada!")
-	// pterm.Info.Printfln("Dirección configurada: %s", pterm.LightGreen(address))
+	pterm.Success.Printfln("¡Configuration completed!")
+	// pterm.Info.Printfln("Address configured: %s", pterm.LightGreen(address))
 }
 
 func promptAddress() string {
 	address := ""
 	prompt := &survey.Input{
-		Message: "Dirección de NETSOCS:",
-		Help:    "Ejemplo: 192.168.1.1 o servidor.netsocs.com",
+		Message: "NETSOCS Address:",
+		Help:    "Example: 192.168.1.1 or server.netsocs.com",
 		Suggest: func(toComplete string) []string {
 			return []string{
 				"192.168.1.",
 				"10.0.0.",
-				"servidor.netsocs.com",
+				"server.netsocs.com",
 				"dns.netsocs.local",
 			}
 		},
@@ -48,12 +48,12 @@ func promptAddress() string {
 	validation := func(input interface{}) error {
 		str, ok := input.(string)
 		if !ok {
-			return fmt.Errorf("tipo de dato inválido")
+			return fmt.Errorf("invalid data type")
 		}
 		if isValidAddress(str) {
 			return nil
 		}
-		return fmt.Errorf("formato inválido: debe ser IP (XXX.XXX.XXX.XXX) o dominio (ej: dns.netsocs.com)")
+		return fmt.Errorf("invalid format: must be IP (XXX.XXX.XXX.XXX) or domain (e.g: dns.netsocs.com)")
 	}
 
 	// survey.AskOne(prompt, &ip, survey.WithValidator(validation))
@@ -65,26 +65,26 @@ func promptAddress() string {
 		survey.WithValidator(validation),
 	)
 	if err != nil {
-		pterm.Error.Printfln("Error al obtener la dirección: %v", err)
+		pterm.Error.Printfln("Error getting address: %v", err)
 		os.Exit(1)
 	}
 	return address
 }
 
 func isValidAddress(address string) bool {
-	// Validación para dirección IP
+	// Validation for IP address
 	ipRegex := regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
 	if ipRegex.MatchString(address) {
 		return true
 	}
 
-	// Validación para dominio
+	// Validation for domain
 	domainRegex := regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])*(\.[a-zA-Z]{2,})$`)
 	if domainRegex.MatchString(address) {
 		return true
 	}
 
-	// Permitir dominios locales sin TLD
+	// Allow local domains without TLD
 	localDomainRegex := regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9](\.[a-zA-Z0-9][a-zA-Z0-9-]{0,61}[a-zA-Z0-9])+$`)
 	return localDomainRegex.MatchString(address)
 }
