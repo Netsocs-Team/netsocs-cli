@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -116,6 +117,43 @@ var cliListVersionsCmd = &cobra.Command{
 	},
 }
 
+var autoInstallCmd = &cobra.Command{
+	Use:   "auto-install",
+	Short: "Installs the CLI as 'netsocs' in /usr/local/bin for all users",
+	Run: func(cmd *cobra.Command, args []string) {
+		target := "/usr/local/bin/netsocs"
+		// Check write permission
+		file, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE, 0755)
+		if err != nil {
+			fmt.Println("You need to run this command as root (with sudo) to install system-wide in /usr/local/bin.")
+			os.Exit(1)
+		}
+		file.Close()
+		exePath, err := os.Executable()
+		if err != nil {
+			fmt.Println("Could not get current executable path:", err)
+			os.Exit(1)
+		}
+		in, err := os.Open(exePath)
+		if err != nil {
+			fmt.Println("Could not open current executable:", err)
+			os.Exit(1)
+		}
+		defer in.Close()
+		out, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0755)
+		if err != nil {
+			fmt.Println("Could not create target binary in /usr/local/bin:", err)
+			os.Exit(1)
+		}
+		defer out.Close()
+		if _, err := io.Copy(out, in); err != nil {
+			fmt.Println("Error copying binary:", err)
+			os.Exit(1)
+		}
+		fmt.Printf("CLI installed as '%s'.\nYou can now run 'netsocs' from any user or location.\n", target)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(configCmd)
@@ -129,6 +167,7 @@ func init() {
 	cliCmd.AddCommand(cliUpdateCmd)
 	cliCmd.AddCommand(cliListVersionsCmd)
 	rootCmd.AddCommand(cliCmd)
+	rootCmd.AddCommand(autoInstallCmd)
 }
 
 func main() {
