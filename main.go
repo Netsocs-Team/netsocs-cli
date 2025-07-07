@@ -16,7 +16,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var version = "v0.0.0"
+var (
+	version = "v0.0.0"
+)
 
 var rootCmd = &cobra.Command{
 	Use:     "netsocs-manager-cli",
@@ -30,7 +32,7 @@ type ChartValues struct {
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Initializes Helm configuration for Netsocs",
+	Short: "Installs Docker, Helm, Kind, kubectl and initializes Helm configuration for Netsocs",
 	Run:   commandinit.InitCommand,
 }
 
