@@ -31,23 +31,10 @@ jobs:
           echo "Extracted version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-      # - name: Build CLI with version
-      #   run: |
-      #     # Asume que tu main.go está en el directorio cmd/cli
-      #     go build -ldflags="-X 'main.Version=${{ steps.version.outputs.version }}'" -o netsocs .
-
-      - name: Build and Push CLI
-        uses: docker/build-push-action@v5
-        with:
-            context: cli
-            platforms: linux/amd64
-            provenance: false
-            push: false
-            tags: |
-                ${{ env.REGISTRY }}/netsocs-team/netsocs-cli/main:${{ steps.branch.outputs.branch }}
-                ${{ env.REGISTRY }}/netsocs-team/netsocs-cli/main:${{ github.sha }}
-            build-args: | 
-                VERSION=${{ steps.version.outputs.version }}
+      - name: Build CLI with version
+        run: |
+          echo "${{ steps.version.outputs.version }}" > version
+          go build -o netsocs .
 
       - name: Create Release
         uses: softprops/action-gh-release@v1

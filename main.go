@@ -12,13 +12,20 @@ import (
 	commandstatus "github.com/Netsocs-Team/netsocs-manager-cli/command_status"
 	commandupgrade "github.com/Netsocs-Team/netsocs-manager-cli/command_upgrade"
 	"github.com/Netsocs-Team/netsocs-manager-cli/utils"
-
 	"github.com/spf13/cobra"
+	_ "embed"
 )
 
-var (
-	version = "v0.0.0"
-)
+//go:embed version
+var versionBytes []byte
+
+var version = GetVersion()
+
+func GetVersion() string {
+	version := string(versionBytes)
+	version = strings.ReplaceAll(version, "\n", "")
+	return string(version)
+}
 
 var rootCmd = &cobra.Command{
 	Use:     "netsocs-manager-cli",
