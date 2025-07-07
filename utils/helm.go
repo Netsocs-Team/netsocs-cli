@@ -319,26 +319,34 @@ func DownloadAndReplaceCLI(version string) error {
 	f.Close()
 
 	// Create update.sh script
-	exePath, err := os.Executable()
-	if err != nil {
-		return err
-	}
 	updateScriptPath := filepath.Join(netsocsDir, "update.sh")
-	updateScript := fmt.Sprintf(`#!/bin/bash\nset -e\nNEWBIN=\"%s\"\nTARGET=\"%s\"\necho \"Updating CLI...\"\nchmod +x \"$NEWBIN\"\nmv \"$NEWBIN\" \"$TARGET\"\necho \"Update complete!\"\n`, newBinPath, exePath)
+	updateScript := fmt.Sprintf(`#!/bin/bash
+set -e
+echo "Updating CLI..."
+sudo rm /usr/local/bin/netsocs
+sudo cp "%s" /usr/local/bin/netsocs
+sudo chmod +x /usr/local/bin/netsocs
+echo "Update complete!"
+`, newBinPath)
 	if err := os.WriteFile(updateScriptPath, []byte(updateScript), 0755); err != nil {
 		return err
 	}
 
 	pterm.Info.Println("Nuevo binario descargado en:", newBinPath)
-	pterm.Info.Println("Ejecutando script de actualización:", updateScriptPath)
+	pterm.Info.Println("Ejecutando script de actualización en segundo plano:", updateScriptPath)
 
-	// Ejecutar el script
+	// Ejecutar el script de forma asíncrona
 	cmd := exec.Command("bash", updateScriptPath)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("error ejecutando el script de actualización: %w", err)
+
+	// Iniciar el comando en segundo plano sin esperar
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("error iniciando el script de actualización: %w", err)
 	}
+
+	// No esperar a que termine, solo informar que se inició
+	pterm.Success.Println("Actualización iniciada en segundo plano. El CLI se actualizará automáticamente.")
 
 	return nil
 }
