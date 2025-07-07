@@ -44,8 +44,8 @@ jobs:
             provenance: false
             push: false
             tags: |
-                ${{ env.REGISTRY }}/netsocs-team/netsocs-cli/cli:${{ steps.branch.outputs.branch }}
-                ${{ env.REGISTRY }}/netsocs-team/netsocs-cli/cli:${{ github.sha }}
+                ${{ env.REGISTRY }}/netsocs-team/netsocs-cli/main:${{ steps.branch.outputs.branch }}
+                ${{ env.REGISTRY }}/netsocs-team/netsocs-cli/main:${{ github.sha }}
             build-args: | 
                 VERSION=${{ steps.version.outputs.version }}
 
