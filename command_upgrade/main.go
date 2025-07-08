@@ -2,6 +2,7 @@ package commandupgrade
 
 import (
 	"os"
+	"os/exec"
 
 	"github.com/Netsocs-Team/netsocs-manager-cli/utils"
 	"github.com/pterm/pterm"
@@ -15,6 +16,14 @@ func UpgradeCommand(cmd *cobra.Command, args []string) {
 		pterm.Info.Printfln("Upgrading to version: %s", version)
 	} else {
 		pterm.Info.Println("Upgrading to the latest version available")
+	}
+
+	cmdResult := exec.Command("helm", "repo", "update")
+	cmdResult.Stdout = os.Stdout
+	cmdResult.Stderr = os.Stderr
+	if err := cmdResult.Run(); err != nil {
+		pterm.Error.Printfln("Error updating Helm repositories: %v", err)
+		os.Exit(1)
 	}
 
 	if err := utils.RunHelmUpgradeWithVersion(version); err != nil {
