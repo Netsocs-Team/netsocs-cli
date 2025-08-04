@@ -6,14 +6,16 @@ import (
 	"os"
 	"strings"
 
+	_ "embed"
+
 	commandcli "github.com/Netsocs-Team/netsocs-manager-cli/command_cli"
 	commandconfig "github.com/Netsocs-Team/netsocs-manager-cli/command_config"
+	commandenviroment "github.com/Netsocs-Team/netsocs-manager-cli/command_enviroment"
 	commandinit "github.com/Netsocs-Team/netsocs-manager-cli/command_init"
 	commandstatus "github.com/Netsocs-Team/netsocs-manager-cli/command_status"
 	commandupgrade "github.com/Netsocs-Team/netsocs-manager-cli/command_upgrade"
 	"github.com/Netsocs-Team/netsocs-manager-cli/utils"
 	"github.com/spf13/cobra"
-	_ "embed"
 )
 
 //go:embed version
@@ -67,6 +69,12 @@ var rollbackCmd = &cobra.Command{
 	Short: "Rollback the application to a previous revision",
 	Args:  cobra.MaximumNArgs(1),
 	Run:   commandupgrade.RollbackCommand,
+}
+
+var environmentCmd = &cobra.Command{
+	Use:   "enviroment",
+	Short: "Test the enviroment of the application",
+	Run:   commandenviroment.EnvironmentCommand,
 }
 
 var versionCmd = &cobra.Command{
@@ -164,6 +172,7 @@ var autoInstallCmd = &cobra.Command{
 }
 
 func init() {
+	initCmd.Flags().Bool("ignore-network-check", false, "Skip network connection check")
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(configCmd)
 	statusCmd.Flags().BoolP("verbose", "v", false, "Show full pod details")
@@ -177,6 +186,7 @@ func init() {
 	cliCmd.AddCommand(cliListVersionsCmd)
 	rootCmd.AddCommand(cliCmd)
 	rootCmd.AddCommand(autoInstallCmd)
+	rootCmd.AddCommand(environmentCmd)
 }
 
 func main() {
